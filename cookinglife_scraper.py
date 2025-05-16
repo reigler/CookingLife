@@ -4,7 +4,10 @@ from bs4 import BeautifulSoup
 import json
 
 # Target product URL
-URL = "https://cookinglife.nl/products/cookinglife-citruspers"
+URLS = [
+    "https://cookinglife.nl/products/cookinglife-citruspers",
+    "https://cookinglife.nl/products/cookinglife-drankdispenser-2-4liter"
+]
 HEADERS = {
     "User-Agent": "Mozilla/5.0"
 }
