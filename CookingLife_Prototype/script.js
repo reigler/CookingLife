@@ -1,3 +1,6 @@
+const urlParams = new URLSearchParams(window.location.search);
+const productSlug = urlParams.get("product");
+
 const images = ["assets/img1.jpg", "assets/img2.jpg"];
 let current = 0;
 
@@ -7,15 +10,19 @@ const uspList = document.getElementById("usp-list");
 
 let usps = [];
 
-// ✅ Fetch the JSON file containing the scraped USPs
-fetch("usps.json")
-  .then(response => response.json())
-  .then(data => {
-    usps = data;
-  })
-  .catch(err => {
-    console.error("Failed to load usps.json:", err);
-  });
+if (productSlug) {
+  fetch(`usps_${productSlug}.json`)
+    .then(response => {
+      if (!response.ok) throw new Error("USP file not found.");
+      return response.json();
+    })
+    .then(data => {
+      usps = data;
+    })
+    .catch(err => {
+      console.error("Could not load USPs:", err);
+    });
+}
 
 // Carousel navigation
 document.getElementById("next").addEventListener("click", () => {
