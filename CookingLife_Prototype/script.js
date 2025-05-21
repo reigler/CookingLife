@@ -1,52 +1,75 @@
-const urlParams = new URLSearchParams(window.location.search);
-const productSlug = urlParams.get("product");
+const images = [
+  { src: "assets/img1.jpg", type: "usps" },
+  { src: "assets/img2.jpg", type: "dimensions" },
+  { src: "assets/img3.jpg", type: "items_included" }
+];
 
-const images = ["assets/img1.jpg", "assets/img2.jpg"];
 let current = 0;
+let productData = {};
 
 const carouselImg = document.getElementById("carousel-img");
-const uspOverlay = document.getElementById("usp-overlay");
-const uspList = document.getElementById("usp-list");
+const overlay = document.getElementById("overlay");
+const overlayTitle = document.getElementById("overlay-title");
+const overlayList = document.getElementById("overlay-list");
 
-let usps = [];
+const params = new URLSearchParams(window.location.search);
+const productSlug = params.get("product");
+const dataFile = `usps_${productSlug}.json`;
 
-if (productSlug) {
-  fetch(`usps_${productSlug}.json`)
-    .then(response => {
-      if (!response.ok) throw new Error("USP file not found.");
-      return response.json();
-    })
-    .then(data => {
-      usps = data;
-    })
-    .catch(err => {
-      console.error("Could not load USPs:", err);
-    });
-}
+fetch(dataFile)
+  .then(res => res.json())
+  .then(data => {
+    productData = data;
+    updateOverlay();
+  })
+  .catch(err => {
+    console.error("Could not load product JSON:", err);
+  });
 
-// Carousel navigation
 document.getElementById("next").addEventListener("click", () => {
   current = (current + 1) % images.length;
-  carouselImg.src = images[current];
-  checkOverlay();
+  updateCarousel();
 });
 
 document.getElementById("prev").addEventListener("click", () => {
   current = (current - 1 + images.length) % images.length;
-  carouselImg.src = images[current];
-  checkOverlay();
+  updateCarousel();
 });
 
-function checkOverlay() {
-  if (current === 1 && usps.length > 0) {
-    uspOverlay.classList.remove("hidden");
-    uspList.innerHTML = "";
-    usps.forEach(usp => {
-      const li = document.createElement("li");
-      li.textContent = usp;
-      uspList.appendChild(li);
-    });
+function updateCarousel() {
+  carouselImg.src = images[current].src;
+  updateOverlay();
+}
+
+function updateOverlay() {
+  overlayList.innerHTML = "";
+
+  const type = images[current].type;
+  const list = productData[type];
+
+  if (list && Object.keys(list).length > 0) {
+    overlay.classList.remove("hidden");
+    overlayTitle.textContent =
+      type === "usps"
+        ? "Voordelen"
+        : type === "dimensions"
+        ? "Afmetingen"
+        : "Inhoud verpakking";
+
+    if (Array.isArray(list)) {
+      list.forEach(usp => {
+        const li = document.createElement("li");
+        li.textContent = usp;
+        overlayList.appendChild(li);
+      });
+    } else {
+      for (const [key, val] of Object.entries(list)) {
+        const li = document.createElement("li");
+        li.textContent = `${key}: ${val}`;
+        overlayList.appendChild(li);
+      }
+    }
   } else {
-    uspOverlay.classList.add("hidden");
+    overlay.classList.add("hidden");
   }
 }
